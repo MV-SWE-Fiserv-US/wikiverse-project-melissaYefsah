@@ -7,7 +7,15 @@ export const App = () => {
   const [pages, setPages] = useState([])
   const [selectedArticle, setSelectedArticle] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isAddingArticle, setIsAddingArticle] = useState(false)
   const [error, setError] = useState(null)
+  const [newArticle, setNewArticle] = useState({
+    title: '',
+    content: '',
+    authorName: '',
+    authorEmail: '',
+    tags: ''
+  })
 
   // Fetch the list of pages
   async function fetchPages () {
@@ -50,25 +58,126 @@ export const App = () => {
   const handleBackToList = () => {
     setSelectedArticle(null)
   }
+  // Handle form input changes
+  const handleChange = (event) => {
+    const { name, value } = event.target
+    setNewArticle({
+      ...newArticle,
+      [name]: value
+    })
+  }
+  // handle form submission
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+    const { title, content, authorName, authorEmail, tags } = newArticle
+
+    const articleData = {
+      title,
+      content,
+      name: authorName,
+      email: authorEmail,
+      tags
+    }
+
+    try {
+      const response = await fetch(`${apiURL}/wiki`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(articleData)
+      })
+
+      const newPage = await response.json()
+      setPages([...pages, newPage]) // Add new page to the list
+      setIsAddingArticle(false) // Switch back to list view
+      setNewArticle({ title: '', content: '', authorName: '', authorEmail: '', tags: '' }) // Reset form
+    } catch (error) {
+      console.error('Error creating page', error)
+    }
+  }
 
   return (
-    <main>
+<main>
       <h1>WikiVerse</h1>
       <h2>An interesting 📚</h2>
-
       {/* Loading state */}
       {isLoading && <p>Loading pages...</p>}
-      {/* Error state */}
-      {error && <p style={{ color: 'red' }}>Error: {error}</p>}
 
-      {/* If an article is selected, show article details */}
-      {selectedArticle
+      {isAddingArticle
       ? (
-        <ArticleDetails article={selectedArticle} onBack={handleBackToList} />
+      <form onSubmit={handleSubmit}>
+          <div>
+            <label htmlFor="title">Title:</label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              value={newArticle.title}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="content">Content:</label>
+            <textarea
+              id="content"
+              name="content"
+              value={newArticle.content}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div>
+            <label htmlFor="authorName">Author Name:</label>
+            <input
+              type="text"
+              id="authorName"
+              name="authorName"
+              value={newArticle.authorName}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div>
+            <label htmlFor="authorEmail">Author Email:</label>
+            <input
+              type="email"
+              id="authorEmail"
+              name="authorEmail"
+              value={newArticle.authorEmail}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div>
+            <label htmlFor="tags">Tags (separate by spaces):</label>
+            <input
+              type="text"
+              id="tags"
+              name="tags"
+              value={newArticle.tags}
+              onChange={handleChange}
+            />
+          </div>
+
+          <button type="submit">Create Article</button>
+          <button type="button" onClick={() => setIsAddingArticle(false)}>Cancel</button>
+        </form>
       )
-       : (
-        // Show the pages list when no article is selected
-        <PagesList pages={pages} onPageClick={fetchArticleDetails} />
+      : (selectedArticle
+      ?
+      (<>
+          <ArticleDetails article={selectedArticle} onBack={handleBackToList} />
+        </>)
+      :
+        (<>
+          <button onClick={() => setIsAddingArticle(true)}>Add New Article</button>
+          <PagesList pages={pages} onPageClick={fetchArticleDetails} />
+        </>)
       )}
     </main>
   )
