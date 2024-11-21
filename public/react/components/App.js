@@ -96,6 +96,23 @@ export const App = () => {
       console.error('Error creating page', error)
     }
   }
+  // Handle delete Method
+  const handleDelete = async (slug) => {
+    console.log('Deleting article with slug:', slug)
+    try {
+      const response = await fetch(`${apiURL}/wiki/${slug}`, {
+        method: 'DELETE'
+      })
+      if (!response.ok) {
+        throw new Error('Failed to delete article')
+      }
+      // Update the pages list in state after deletion
+      setPages((prevPages) => prevPages.filter((page) => page.slug !== slug))
+      setSelectedArticle(null) // Optionally reset the selected article after deletion
+    } catch (err) {
+      console.error('Error deleting article', err)
+    }
+  }
 
   return (
 <main>
@@ -171,7 +188,7 @@ export const App = () => {
       : (selectedArticle
       ?
       (<>
-          <ArticleDetails article={selectedArticle} onBack={handleBackToList} />
+          <ArticleDetails article={selectedArticle} onBack={handleBackToList} onDelete={handleDelete} />
         </>)
       :
         (<>
