@@ -10,7 +10,7 @@ export const ArticleDetails = ({ article, onBack, onDelete }) => {
       <p><strong>Created At:</strong> {new Date(article.createdAt).toLocaleDateString()}</p>
 
       <button onClick={onBack}>Back to Wiki List</button>
-      <button onClick={onDelete}>DELETE</button>
+      <button onClick={() => onDelete(article.slug)}>DELETE</button>
     </div>
   )
 }

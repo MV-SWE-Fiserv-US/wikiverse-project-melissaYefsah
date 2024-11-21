@@ -98,7 +98,8 @@ export const App = () => {
   }
   // Handle delete Method
   const handleDelete = async (slug) => {
-    console.log('Deleting article with slug:', slug)
+    console.log('Slug type:', typeof slug)
+    console.log('Slug value:', slug)
     try {
       const response = await fetch(`${apiURL}/wiki/${slug}`, {
         method: 'DELETE'
